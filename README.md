@@ -29,10 +29,10 @@ There is a tool called NodeAdmin that can be used to visualize databases and tab
 Run the utility with the command ```node dbadmin.js``` and open [your local NodeAdmin](http://localhost:1338/nodeadmin). It runs on port 1338.
 
 
-### Detailed description of installation
+## Detailed description of installation
 If you feel a bit confused and want some extra help to get started, here is a guide to setup everything (tested on a Debian system).
 
-####Setup node
+### Setup node
 
 #### Step 1
 Make sure you have Node and npm installed, for up-to-date info see [Node installation page](https://docs.npmjs.com/getting-started/installing-node).  
@@ -45,9 +45,9 @@ sudo npm install npm@latest -g
 #### Step 2
 When the installations are done, use ```npm install``` to setup project dependencies. This process will take around 2-10 minutes.
 
-#### Database dependencies
+### Database dependencies
 The project uses a MySQL database which needs some "manual" setup.
-##### Step 1
+#### Step 1
 First off, install the MySQL server software using 
 ```
 sudo apt-get update && sudo apt-get upgrade
@@ -55,11 +55,11 @@ sudo apt-get install mysql-server --fix-missing
 ```
 During the installation process you will be prompted with a root password. This is the account we will use to setup our database. Any account with privileges to use the CREATE DATABASE, CREATE USER and CREATE TABLE privileges would be fine though.
 
-##### Step 2
+#### Step 2
 When the password has been set, create the db by runnning the following command (make sure to input the root password you selected in Step 1.
 ```
 mysql --user=root --password=your_root_password < db_setup.sql
 ```
 
-##### Step 3
+#### Step 3
 Be happy! If everything goes as planned, the DB should be setup and ready to use.
