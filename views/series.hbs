@@ -1,0 +1,124 @@
+{{#if error}}
+    <div class = "full-size center-contents info-message">
+        {{error}}
+    </div>
+{{else}}
+    <div class = "left-column">
+        <div class = "table-wrapper">
+            <table class = "standings">
+                <thead>
+                    <tr>
+                        <td>#</td>
+                        <td><span id = "table-header-name"></span></td>
+                        <td class = "centered"><span id = "table-header-games"></span></td>
+                        <td class = "centered"><span id = "table-header-wins"></span></td>
+                        <td class = "centered"><span id = "table-header-eq"></span></td>
+                        <td class = "centered"><span id = "table-header-losses"></span></td>
+                        <td class = "centered"><span id = "table-header-goal-difference"></span></td>
+                        <td class = "centered"><span id = "table-header-plus-minus"></span></td>
+                        <td class = "centered"><span id = "table-header-points"></span></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each standings as |team index|}}
+                        <tr>
+                            <td>{{inc @index}}</td>
+                            <td><a href = "/series/{{../seriesName}}/{{team.pagename}}/">{{ team.name }}</a></td>
+                            <td class = "centered">{{ team.games }}</td>
+                            <td class = "centered">{{ team.wins }}</td>
+                            <td class = "centered">{{ team.eq }}</td>
+                            <td class = "centered">{{ team.losses }}</td>
+                            <td class = "centered">{{ team.goals }} - {{ team.antigoals }}</td>
+                            <td class = "centered">{{ sign team.diff }}</td>
+                            <td class = "centered">{{ team.points }}</td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+        
+        <h3>Senaste matcher</h3>
+        {{#each latestgames as |game index|}}
+            <div class = "match-wrapper">
+                <div class = "match-middle-wrapper">
+                    <div class = "match-inner-wrapper">
+                        <div class = "match-game">
+                            <div class = "match-team match-result-team {{gameresult game.t1_score game.t2_score}}"><a href = "/series/{{../seriesName}}/{{game.t1_pagename}}">{{ game.t1_name }}</a></div>
+                            <div class = "match-result">
+                                <div class = "match-score">{{game.t1_score}}</div>
+                                -
+                                <div class = "match-score">{{game.t2_score}}</div>
+                            </div>
+                            <div class = "match-team match-result-team {{gameresult game.t2_score game.t1_score}}"><a href = "/series/{{../seriesName}}/{{game.t2_pagename}}">{{ game.t2_name }}</a></div>
+                        </div>
+                    </div>
+                    <div class = "match-lastgame">{{ vsstats game.t1_name game.t1_score game.t1_score_prev game.t2_name game.t2_score game.t2_score_prev }}</div>
+                </div>
+                {{#if game.video_platform}}
+                    <a href = "/series/{{../seriesName}}/{{game.t1_pagename}}/watch?game={{game.game_id}}">
+                        <img class = "match-thumbnail" src = "{{thumbnail game.video_platform game.video_link}}">
+                    </a>
+                {{else}}
+                    <div class = "match-no-thumbnail">
+                        Ingen video
+                    </div>
+                {{/if}}
+            </div>
+        {{/each}}
+        
+        <h3>Kommande matcher</h3>
+        {{#each upcoming as |game index|}}
+            <div class = "match-wrapper">
+                <div class = "match-middle-wrapper">
+                    <div class = "match-inner-wrapper">
+                        <div class = "match-game">
+                            <div class = "match-team"><a href = "/series/{{../seriesName}}/{{game.t1_pagename}}">{{ game.t1_name }}</a></div>
+                            &nbsp;-&nbsp;
+                            <div class = "match-team"><a href = "/series/{{../seriesName}}/{{game.t2_pagename}}">{{ game.t2_name }}</a></div>
+                        </div>
+                        <div class = "match-playdate">{{ prettydatetime game.playdate }}</div>
+                        <div class = "match-location">{{ game.location }}</div>
+                    </div>
+                    {{#if (isnumber game.t1_score_prev)}}
+                        <div class = "match-lastgame">{{ lastgame game.t1_name game.t1_score_prev game.t2_name game.t2_score_prev }}</div>
+                    {{else}}
+                        De här lagen har inte mötts än i serien.
+                    {{/if}}
+                </div>
+            </div>
+        {{/each}}
+    </div>
+    
+    <div class = "left-column">
+    </div>
+    
+    <div class = "table-wrapper invis-bordesr left-column">
+        <table>
+            <thead>
+                <tr>
+                    <td><span id = "table-header-date"></span></td>
+                    <td><span id = "table-header-game"></span></td>
+                    <td><span id = "table-header-result"></span></td>
+                    <td class = "centered"><span id = "table-header-video"></span></td>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each playedgames as |game index|}}
+                    <tr>
+                        <td class = "allgames-date">{{prettydate game.playdate}}</td>
+                        <td><a href = "/series/{{../seriesName}}/{{game.t1_pagename}}">{{ game.t1_name }}</a> - <a href = "/series/{{../seriesName}}/{{game.t2_pagename}}">{{ game.t2_name }}</a></td>
+                        <td class = "centered">{{game.t1_score}} - {{game.t2_score}}</td>
+                        <td class = "centered {{ternary game.video_link "" "grayed-out"}}">
+                            {{#if game.video_link}}
+                                <a href = "/series/{{../seriesName}}/{{game.t1_pagename}}/watch?game={{game.game_id}}">Titta här</a>
+                            {{else}}
+                                Inte än
+                            {{/if}}
+                        </td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+    
+{{/if}}

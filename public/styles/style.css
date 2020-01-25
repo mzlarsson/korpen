@@ -1,0 +1,554 @@
+
+* {
+    font-family:"Segoe UI";
+}
+
+body {
+  margin: 0;
+}
+
+table{
+    border-spacing:0;
+    border-collapse:collapse;
+}
+.table-wrapper table td{
+    padding:4px 8px;
+}
+.table-wrapper table tr:nth-child(even){
+    background-color:#cbd5e0;
+}
+.table-wrapper table thead  tr:nth-child(1){
+    border-bottom:1px solid #dddddd;
+}
+.table-wrapper{
+    display:inline-block;
+    border:1px solid #cccccc;
+    padding:7px 15px 15px 15px;
+}
+.centered{
+    text-align:center;
+}
+.hidden{
+    display:none;
+}
+.grayed-out{
+    color:#888888;
+}
+select.centered{
+    display:block;
+    margin:0 auto;
+}
+.left-column{
+    float:left;
+    margin-right:100px;
+}
+.invis-border{
+    border-color:rgba(255, 255, 255, 0);
+}
+
+input[type=text], input[type=password], input[type=number]{
+    padding: 6px 12px;
+}
+
+input[type=submit], input[type=button]{
+    padding: 6px 12px;
+}
+.input-with-unit input {
+    padding-right: 18px;
+    text-align: right;
+}
+.input-with-unit span {
+    position: relative;
+    left: -20px;
+}
+.input-with-unit span.disabled{
+    color:#545454;
+}
+select {
+    padding: 6px 8px;
+}
+a:hover{
+    opacity: 0.8;
+}
+a:link, a:visited, a:active{
+    color:black;
+    text-decoration:none;
+}
+
+
+/* ----------------------------- */
+
+#page {
+    display:flex;
+    height:100vh;
+    flex-direction:column;
+}
+
+#header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background-color: #cbd5e0;
+    height: 80px;
+}
+
+#content{
+    flex:1;
+    display:flex;
+    flex-wrap:wrap;
+    overflow:hidden;
+}
+
+#footer{
+    height: 30px;
+    line-height:30px;
+    vertical-align:center;
+    background-color: #cbd5e0;
+    color:black;
+}
+
+#sidemenu{
+    width:300px;
+    border-right: 1px solid #cbd5e0;
+}
+
+#pagecontent{
+    flex:1;
+    padding: 20px 30px;
+    min-width:400px;
+    max-height:96%;
+    overflow-y:scroll;
+    overflow-x:hidden;
+}
+
+#header img.logo {
+    height: 80px;
+}
+
+#header select {
+    text-align:center;
+}
+
+#header .login-form {
+    margin: 20px 20px 20px 0px;
+    text-align:right;
+}
+
+#header .login-form div{
+    float:left;
+}
+
+.login-field{
+    margin-bottom:4px;
+}
+.login-button {
+    margin-top: 20px;
+    margin-left: 10px;
+}
+
+/* ------------------------------- */
+.full-size{
+    width:100%;
+    height:900px;
+}
+
+.center-contents{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+.info-message{
+    font-size: 5em;
+    color:#aaaaaa;
+}
+
+.match-wrapper{
+    display:flex;
+    padding: 10px;
+    border: 1px solid #cccccc;
+    margin: 10px 0px;
+}
+.match-middle-wrapper{
+    flex:1;
+}
+.match-inner-wrapper{
+    display:flex;
+    flex-wrap:wrap;
+}
+.match-game{
+    /*display:flex;*/
+    flex:1;
+}
+.match-game div{
+    display:inline-block;
+}
+.match-result-team{
+    width: 125px;
+}
+.match-result-team.winner a{
+    color: #126012;
+}
+.match-result-team.loser a{
+    color: #601212;
+}
+.match-result-team.eq a{
+    color: #000000;
+}
+.match-result{
+    display:flex;
+    width: 60px;
+}
+.match-score{
+    margin:0px 4px;
+}
+.match-playdate{
+    width: 200px;
+}
+.match-location{
+    
+}
+.match-lastgame{
+    font-size:0.75em;
+}
+.match-thumbnail{
+    width:120px;
+    height:90px;
+}
+    
+.match-no-thumbnail{
+    margin-left: 30px;
+    line-height:40px;
+    vertical-align:center;
+    color:#aaaaaa;
+}
+
+.allgames-date{
+    width:100px;
+}
+
+.sidemenu-header{
+    margin-top:10px;
+}
+.sidemenu-menu > a:first-child .sidemenu-item{
+    border-top:1px solid #cbd5e0;
+}
+.sidemenu-item{
+    padding: 6px 30px;
+    border-bottom:1px solid #cbd5e0;
+}
+.sidemenu-item.selected{
+    background-color: #cbd5e0;
+}
+.sidemenu-item:hover{
+    background-color: #cbd5e088;
+}
+.select-team{
+    margin-top:10px !important;
+    margin-bottom: 20px !important;
+}
+
+tr.active-team{
+    background-color:#cbd580 !important;
+}
+
+/* --------------------------- */
+.video-player-wrapper{
+    display:flex;
+}
+.yt-player-wrapper{
+    width:1280px;
+    height:720px;
+}
+.yt-timestamping-wrapper{
+    width: 600px;
+    height: 480px;
+}
+.yt-preview-wrapper{
+    height: 185px;
+}
+div.happening{
+    min-width:160px;
+    margin-left:10px;
+    padding:6px 10px 6px 10px;
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+}
+div.happening:hover{
+    cursor: pointer;
+    background-color:#ddd;
+}
+
+div.multiselect{
+    display:flex;
+    justify-content:space-around;
+    margin-top:20px;
+    text-align:center;
+}
+div.multiselect div.header{
+    font-size:20px;
+    margin-bottom:10px;
+}
+div.multiselect div.multioption{
+    padding:6px 12px;
+}
+div.multiselect div.multioption.selected{
+    background-color:#ccc;
+}
+div.multiselect div.multioption:hover{
+    cursor:pointer;
+    background-color:#ddd;
+}
+div.multiselect div.multioption.selected:hover{
+    cursor:default;
+    background-color:#ccc;
+}
+/* -------------------------------- */
+input:invalid {
+  border: red solid 1px;
+}
+
+.all-videos-wrapper{
+    padding-right: 50px;
+    margin-right: 0px;
+    border-right: 1px solid #aaaaaa;
+}
+.all-events-wrapper{
+    padding-left: 50px;
+    margin-right: 0px;
+}
+
+.video-wrapper{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:flex-start;
+}
+
+/* Inherited from <h4>, with less margin end */
+.video-wrapper-header{
+    display: block;
+    margin-block-start: 1.33em;
+    margin-block-end: 0em;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+    font-weight: bold;
+}
+.input-description{
+    margin-top:10px;
+    margin-bottom: 2px;
+}
+.video-input-name {
+    width: 204px;
+}
+input.video-input-offset{
+    width:30px;
+}
+select.video-input-service {
+    width: 298px;
+    padding-left: 12px;
+}
+input.video-input-link{
+    width:270px;
+}
+
+.video-wrapper .yt-preview-wrapper{
+    margin-top:30px;
+    align-self:flex-end; 
+}
+
+.preview-event-goal-score, .preview-event-goal-scorer, .preview-event-goal-assist, .preview-event-comment{
+    font-size: 0.9em;
+}
+
+.textbox-with-color{
+    display:inline-block;
+    padding: 4px 12px;
+    margin: 2px 8px 4px 0px; 
+    font-size:0.8em;
+    border:1px solid #aaaaaa;
+}
+.textbox-with-color.camera-0{
+    background-color:#cbd5e0;
+}
+.textbox-with-color.camera-1{
+    background-color:#00800080;
+}
+.textbox-with-color.camera-2{
+    background-color:#8B008B80;
+}
+.textbox-with-color.camera-3{
+    background-color:#80000080;
+}
+/* ---------------------------------- */
+.event-wrapper{
+    margin-bottom:20px;
+}
+.event-wrapper.less-visible{
+    opacity: 0.5;
+}
+.event-input-container{
+    display:none;
+    /*position:relative;
+    left:60px;
+    top:-300px;*/
+    margin-top:10px;
+    padding:10px;
+    z-index:1000;
+    background:#ffffff;
+    border:1px solid #aaaaaa;
+}
+.event-input-submit{
+    margin-top:5px;
+}
+.event-input-comment{
+    width:100%;
+}
+.event-input-time-wrapper{
+    display:inline-block;
+}
+.event-input-minute, .event-input-second{
+    width: 30px;
+}
+.event-edit-icon{
+    vertical-align:-3px;
+    height: 20px;
+}
+.event-edit-icon:hover{
+    cursor: pointer;
+    cursor:hand;
+}
+
+#table-header-name:after{
+    content:"Namn";
+}
+#table-header-games:after{
+    content:"Matcher";
+}
+#table-header-wins:after{
+    content:"Vinst";
+}
+#table-header-eq:after{
+    content:"Lika";
+}
+#table-header-losses:after{
+    content:"Förlust";
+}
+#table-header-goal-difference:after{
+    content:"MS";
+}
+#table-header-plus-minus:after{
+    content:"+/-";
+}
+#table-header-points:after{
+    content:"Poäng"; 
+}
+#table-header-date:after{
+    content:"Datum"; 
+}
+#table-header-game:after{
+    content:"Match"; 
+}
+#table-header-result:after{
+    content:"Resultat"; 
+}
+#table-header-video:after{
+    content:"Video"; 
+}
+
+
+
+
+/* ------------------- MOBILE ---------------------------- */
+@media only screen and (max-width: 600px) {
+    .left-column{
+        margin-right:0px;
+    }
+    .login-form{
+        display:none;
+    }
+    #sidemenu{
+        width:100%;
+        border-right:0px;
+    }
+    #header select{
+        margin-right:20px;
+    }
+    
+    #content{
+        flex:unset;
+        overflow:unset;
+    }
+    #pagecontent{
+        padding: 20px 10px;
+        width:100%;
+        min-width:unset;
+        max-height:unset;
+        overflow-y:unset;
+        overflow-x:hidden;
+    }
+    
+    .full-size.center-contents.info-message{
+        font-size:unset;
+        display:unset;
+        justify-content:unset;
+        align-items:unset;
+        width:unset;
+        height:unset;
+    }
+    
+    .all-videos-wrapper{
+        padding-right: 0px;
+        border-right: 0px;
+    }
+    .all-events-wrapper{
+        padding-left: 0px;
+        margin-right: 0px;
+    }
+    
+    
+    .table-wrapper{
+        padding:6px;
+    }
+    .table-wrapper table td{
+        padding:6px 4px;
+    }
+    
+    #table-header-name:after{
+        content:"Namn";
+    }
+    #table-header-games:after{
+        content:"M";
+    }
+    #table-header-wins:after{
+        content:"V";
+    }
+    #table-header-eq:after{
+        content:"L";
+    }
+    #table-header-losses:after{
+        content:"F";
+    }
+    #table-header-goal-difference:after{
+        content:"MS";
+    }
+    #table-header-plus-minus:after{
+        content:"+/-";
+    }
+    #table-header-points:after{
+        content:"P"; 
+    }
+    #table-header-date:after{
+        content:"Datum"; 
+    }
+    #table-header-game:after{
+        content:"Match"; 
+    }
+    #table-header-result:after{
+        content:"Resultat"; 
+    }
+    #table-header-video:after{
+        content:"Video"; 
+    }
+}

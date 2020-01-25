@@ -1,0 +1,57 @@
+{{#if error}}
+    <div class = "full-size center-contents info-message">
+        {{error}}
+    </div>
+{{else}}
+
+    <div class = "video-player-wrapper">
+        <div class = "yt-player-wrapper">
+            <div id = "yt_player"></div>
+        </div>
+        <div class = "highlights-menu">
+            {{#each events as |event index|}}
+                <div class = "happening" offset = "{{event.timestamp}}" camera = "{{event.video_index}}" onclick = "setTimeAndView(this.getAttribute('camera'), this.getAttribute('offset'));">
+                    <span class = "time">({{ twodig (div event.timestamp 60)}}:{{ twodig (mod event.timestamp 60)}})</span>
+                    {{#if (eq type "goal")}}
+                        <span class = "goals">{{ t1_goals }} - {{ t2_goals }}</span>
+                        {{#if scorer_pagename}}
+                            <span class = "scorer"><a href = "/series/{{../seriesName}}/{{../teamName}}/player/{{scorer_pagename}}">{{scorer_name}}</a></span><br>
+                        {{else}}
+                            <span class = "scorer"><a href = "/series/{{../seriesName}}/{{event.team_pagename}}/">{{event.team_name}}</a></span>
+                        {{/if}}
+                    {{else if (eq type "comment")}}
+                        <span class = "comment">{{comment}}</span>
+                    {{/if}}
+                </div>
+            {{/each}}
+        </div>
+    </div>
+    
+    <div class = "multiselect">
+        {{#each videoinfo as |camera index|}}
+            <div class = "multioption camera {{ternary (eq index 0) "selected" ""}}" offset = "{{ offset }}" filename = "{{ link }}" onclick = "setCamera(this);">[Kamera {{inc @index}}] {{ camera_name }}</div>
+        {{/each}}
+    </div>
+    
+    <script type = "text/javascript">
+
+        function onYouTubeIframeAPIReady(){
+            console.log("YT IFRAME API loaded");
+            initWatchPlayer("yt_player");
+        };
+        
+        function fixTimestamps(){
+            var happenings = document.getElementsByClassName("happening");
+            for(var i = 0; i<happenings.length; i++){
+                var time = parseInt(happenings[i].getAttribute("offset")) + currVideoOffset;
+                var minutes = Math.floor(time/60);
+                var seconds =  time%60;
+                
+                var timeDiv = happenings[i].getElementsByClassName("time");
+                if(timeDiv.length > 0){
+                    timeDiv[0].innerHTML = "(" + minutes + ":" + (seconds < 10 ? "0"+seconds : seconds) + ")";
+                }
+            }
+        }
+    </script>
+{{/if}}

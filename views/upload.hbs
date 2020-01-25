@@ -1,0 +1,211 @@
+{{#if error}}
+    <div class = "full-size center-contents info-message">
+        {{error}}
+    </div>
+{{else}}
+    <div class = "game-selector-wrapper">
+        <h3>Välj match</h3>
+        <select id = "gameselect" onchange = "gotoUploadPage('{{seriesName}}', '{{teamName}}', this.value);">
+            {{#each videogames as |game index|}}
+                <option value = "{{game_id}}" {{ternary (eq game_id ../gameId) "selected" ""}}>{{prettydate playdate}}: {{t1_name}} {{score t1_score}} - {{score t2_score}} {{t2_name}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class = "left-column all-videos-wrapper">
+        <div id = "videos" class = "videos">
+            {{#each videos as |video index|}}
+                <div class = "video-wrapper">
+                    <div class = "video-info-wrapper">
+                        <div class = "video-wrapper-header">Video {{inc @index}}</div>
+                        
+                        <input type = "hidden" class = "video-input video-input-id" name = "id" value = "{{id}}">
+                        <input type = "hidden" class = "video-input video-input-index" name = "index" value = "{{ternary video_index video_index 0}}">
+                        <table>
+                            <tr>
+                                <td>
+                                    <div class = "input-description">Namn</div>
+                                </td>
+                                <td>
+                                    <div class = "input-description">Offset</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input type = "text" class = "video-input video-input-name" name = "name" value = "{{name}}">
+                                </td>
+                                <td>
+                                    <span class = "input-with-unit">
+                                        <input type = "text" class = "video-input video-input-offset" name = "offset" value = "{{ternary offset offset 0}}" {{ternary (eq index 0) "disabled" ""}}>
+                                        <span class = "video-input-offset-unit {{ternary (eq index 0) "disabled" ""}}">s</span>
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class = "input-description">Service</div>
+                        <select class = "video-input video-input-service" name = "platform">
+                            {{#each ../services as |service service_index|}}
+                                <option value = "{{service.name}}" {{ternary (eq video.platform service.name) "selected" ""}}>{{service.pretty_name}}</option>
+                            {{/each}}
+                        </select>
+                        <div class = "input-description">Länk</div>
+                        <input type = "text" class = "video-input video-input-link" name = "link" placeholder = "Video link" value = "{{videolink platform link}}" pattern = ".*v=([0-9a-zA-Z]{11})($|&.*$)">
+                    </div>
+                    <div class = "yt-preview-wrapper">
+                        <div class = "videopreview" id = "videopreview_{{index}}"></div>
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+        
+        <br><br>
+        <input type = "button" value = "Add another video" onclick = "addExtraVideoInput();">
+        <input type = "button" value = "Save" onclick = "saveVideos();">
+        <div id = "output_from_save"></div>
+    </div>
+    
+    <div class = "left-column all-events-wrapper">
+        <h3>Händelser</h3>
+        {{> preview_events }}
+        
+        <br><br> 
+        <input type = "button" value = "Redigera händelser" onclick = "doYouWantToSave(editEvents);"> 
+    </div>
+    
+    <script type = "text/javascript">
+    
+        var players = [];
+        var readyPlayers = [];
+        
+        setupLinkChangeEvents();
+        
+        function setupLinkChangeEvents(){
+            $(".video-input-link").change(function(){
+                const wrapper = this.parentNode.parentNode;
+                loadPreview(wrapper);
+            });
+        }
+
+        function onYouTubeIframeAPIReady(){
+            console.log("YT IFRAME API loaded");
+            loadPreviews();
+        };
+        
+        function loadPreviews(){
+            const wrappers = document.getElementsByClassName("video-wrapper");
+            for (let i = 0; i<wrappers.length; i++){
+                players.push(undefined);  // loadPreview requires entry to exist
+                loadPreview(wrappers[i]);
+            }
+        }
+        
+        function loadPreview(wrapper){
+            console.log("loaded preview");
+            const videoIndex = parseInt(wrapper.getElementsByClassName("video-input-index")[0].value);
+            const serviceSel = wrapper.getElementsByClassName("video-input-service")[0];
+            const service = serviceSel.options[serviceSel.selectedIndex].value;
+            const link = wrapper.getElementsByClassName("video-input-link")[0].value;
+            
+            if (isValidLink(service, link)) {
+                
+                if (players[videoIndex]){
+                    players[videoIndex].loadVideoById({'videoId': getVideoId(service, link), 'startSeconds': 0});
+                    players[videoIndex].stopVideo();
+                } else {
+                    players[videoIndex] = loadVideoIntoElement(service, "videopreview_"+videoIndex, getVideoId(service, link), function(){
+                        console.log("Video " + videoIndex + " ready!");
+                    });
+                }
+            }
+        }
+    
+        function addExtraVideoInput(){
+            const prevWrappers = document.getElementsByClassName("video-wrapper");
+            
+            const newWrapper = document.createElement("div");
+            newWrapper.className = "video-wrapper";
+            
+            // Create from previous one
+            const newNode = prevWrappers[0].getElementsByClassName("video-info-wrapper")[0].cloneNode(true);
+            
+            // Reset values
+            newNode.getElementsByClassName("video-wrapper-header")[0].innerHTML = "Video " + (prevWrappers.length+1);
+            newNode.getElementsByClassName("video-input-id")[0].value = "";
+            newNode.getElementsByClassName("video-input-index")[0].value = prevWrappers.length;
+            newNode.getElementsByClassName("video-input-name")[0].value = "";
+            newNode.getElementsByClassName("video-input-offset")[0].removeAttribute("disabled");
+            newNode.getElementsByClassName("video-input-offset-unit")[0].className = "video-input-offset-unit";
+            newNode.getElementsByClassName("video-input-link")[0].value = "";
+            
+            // Add info to wrapper
+            newWrapper.appendChild(newNode);
+            
+            // Create new preview container ID
+            const previewWrapper = document.createElement("div");
+            previewWrapper.className = "yt-preview-wrapper";
+            const videoPreview = document.createElement("div");
+            videoPreview.className = "videopreview";
+            videoPreview.setAttribute("id", "videopreview_" + prevWrappers.length);
+            previewWrapper.appendChild(videoPreview);
+            
+            // Add to wrapper
+            newWrapper.appendChild(previewWrapper);
+            
+            // Add to root element
+            document.getElementById("videos").appendChild(newWrapper);
+            
+            // Add empty player (for lookup)
+            players.push(undefined);
+            
+            // Setup change events
+            setupLinkChangeEvents();
+        }
+        
+        function doYouWantToSave(continueFunc){
+        
+            const wantToSave = false;
+            
+            
+            if (wantToSave){
+                saveVideos(continueFunc);
+            } else {
+                if (continueFunc) continueFunc();
+            }
+        }
+        
+        function editEvents(){
+            editGameEvents("{{seriesName}}", "{{teamName}}", {{gameId}});
+        }
+        
+        function saveVideos(callback){
+        
+            const wrappers = document.getElementsByClassName("video-info-wrapper");
+            const processed = 0;
+            const hasErrors = false;
+            for (let i = 0; i<wrappers.length; i++){
+                let id = wrappers[i].getElementsByClassName("video-input-id")[0].value;
+                let index = wrappers[i].getElementsByClassName("video-input-index")[0].value;
+                let name = wrappers[i].getElementsByClassName("video-input-name")[0].value;
+                let offset = wrappers[i].getElementsByClassName("video-input-offset")[0].value;
+                let serviceSel = wrappers[i].getElementsByClassName("video-input-service")[0];
+                let service = serviceSel.options[serviceSel.selectedIndex].value;
+                let link = wrappers[i].getElementsByClassName("video-input-link")[0].value;
+                
+                const output = document.getElementById("output_from_save");
+                output.innerHTML = "";
+                updateOrAddVideo({{gameId}}, id, index, name, offset, service, link, function(error){
+                    if (error){
+                        output.innerHTML += "Video " + (parseInt(index)+1) + ": Error: " + error;
+                        hasErrors = true;
+                    } else {
+                        output.innerHTML += "Video " + (parseInt(index)+1) + " har sparats\n";
+                    }
+                    
+                    if(++processed == wrappers.length && !hasErrors && callback){
+                        callback();
+                    }
+                });
+            }
+        }
+    </script>
+{{/if}}

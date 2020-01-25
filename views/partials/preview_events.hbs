@@ -1,0 +1,38 @@
+{{#each events as |event index|}}
+    
+    {{#if ../editable}}
+    <div class = "preview-event-wrapper" event-id = "{{event_id}}" event-type = "{{type}}" video-index = "{{event.video_index}}" timestamp = "{{ timestamp }}" comment = "{{comment}}" t1_goals = "{{t1_goals}}" t2_goals = "{{t2_goals}}" team_name = "{{team_name}}" team_pagename = "{{team_pagename}}" team-id = "{{team_id}}" scorer_id = "{{scorer_id}}" scorer_name = "{{scorer_name}}" scorer_pagename = "{{scorer_pagename}}" assist_id = "{{assist_id}}" assist_name = "{{assist_name}}" assist_pagename = "{{assist_pagename}}">
+    {{else}}
+    <div class = "preview-event-wrapper">
+    {{/if}}
+        {{#if ../editable}}
+            <img class = "event-edit-icon" src = "/imgs/goto.png" onclick = "gotoEvent(this.parentNode);">
+            <img class = "event-edit-icon" src = "/imgs/edit.png" onclick = "editEvent(this.parentNode);">
+        {{/if}}
+        {{#if (isnumber video_index)}}
+            <div class = "textbox-with-color camera-{{event.video_index}}" >
+                Video {{inc @event.video_index}}
+            </div>
+            <div class = "textbox-with-color time">
+                {{ twodig (div event.timestamp 60)}}:{{ twodig (mod event.timestamp 60)}}
+            </div>
+        {{/if}}
+        {{#if (eq type "goal")}}
+            <span class = "preview-event-goal-score">
+                {{t1_goals}} - {{t2_goals}}
+            </span>
+            {{#if scorer_pagename}}
+                <span class = "preview-event-goal-scorer"><a href = "/series/{{../seriesName}}/{{../teamName}}/player/{{scorer_pagename}}">{{scorer_name}}</a></span>
+            {{else}}
+                <span class = "preview-event-goal-scorer"><a href = "/series/{{../seriesName}}/{{team_pagename}}/">{{team_name}}</a></span>
+            {{/if}}
+            {{#if assist_pagename}}
+                <span class = "preview-event-goal-assist"> (<a href = "/series/{{../seriesName}}/{{../teamName}}/player/{{assist_pagename}}">{{assist_name}}</a>)</span>
+            {{/if}}
+        {{else if (eq type "comment")}}
+            <span class = "preview-event-comment">{{comment}}</span>
+        {{else}}
+            Unknown event!
+        {{/if}}
+    </div>
+{{/each}}

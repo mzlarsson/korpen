@@ -1,0 +1,34 @@
+{{#if error}}
+    <div class = "full-size center-contents info-message">
+        {{error}}
+    </div>
+{{else}}
+    <div class = "left-column">
+        <div class = "table-wrapper">
+            <table class = "playerscores">
+                <thead>
+                    <tr>
+                        <td>#</td>
+                        <td>Namn</td>
+                        <td class = "centered">Matcher</td>
+                        <td class = "centered">Mål</td>
+                        <td class = "centered">Assist</td>
+                        <td class = "centered">Poäng</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each playerscores as |player index|}}
+                        <tr>
+                            <td>{{inc @index}}</td>
+                            <td><a href = "/series/{{../seriesName}}/{{../teamName}}/player/{{pagename}}">{{ name }}</a></td>
+                            <td class = "centered">{{ games }}</td>
+                            <td class = "centered">{{ goals }}</td>
+                            <td class = "centered">{{ assists }}</td>
+                            <td class = "centered">{{ points }}</td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{{/if}}

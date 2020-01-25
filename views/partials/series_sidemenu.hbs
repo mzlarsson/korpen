@@ -1,0 +1,32 @@
+<div class = "sidemenu-header centered">
+    {{ seriesDisplayName }}
+</div>
+
+<select class = "centered select-team" onchange = "selectTeam('{{seriesName}}', this.value);">
+    <option value = "" selected>-- Alla lag --</option>
+    {{#each standings as |team index|}}
+        <option value = "{{team.pagename}}" {{ternary (eq ../teamName pagename) "selected" ""}}>{{team.name}}</option>
+    {{/each}}
+</select>
+
+{{#if teamName}}
+
+    <div class = "sidemenu-menu">
+        <a href = "/series/{{seriesName}}/{{teamName}}/">
+            <div class = "sidemenu-item {{ternary serviceName "" "selected"}}">Start</div>
+        </a>
+        <a href = "/series/{{seriesName}}/{{teamName}}/scores/">
+            <div class = "sidemenu-item {{ternary (eq serviceName "scores") "selected" ""}}">Poängliga</div>
+        </a>
+        <a href = "/series/{{seriesName}}/{{teamName}}/watch/">
+            <div class = "sidemenu-item {{ternary (eq serviceName "watch") "selected" ""}}">Se på video</div>
+        </a>
+        <a href = "/series/{{seriesName}}/{{teamName}}/upload/">
+            <div class = "sidemenu-item {{ternary (eq serviceName "upload") "selected" ""}}">Ladda upp video</div>
+        </a>
+        <a href = "/series/{{seriesName}}/{{teamName}}/settings/">
+            <div class = "sidemenu-item {{ternary (eq serviceName "settings") "selected" ""}}">Inställningar</div>
+        </a>
+    </div>
+
+{{/if}}

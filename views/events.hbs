@@ -1,0 +1,411 @@
+{{#if error}}
+    <div class = "full-size center-contents info-message">
+        {{error}}
+    </div>
+{{else}}
+
+    <div class = "left-column">
+        <h3>Händelser</h3>
+
+        <div id = "event-wrapper" class = "event-wrapper">
+            {{> preview_events }}
+        </div>
+        
+        <div id = "output_from_save"></div>
+        
+        <select onchange = "addNew(this);">
+            <option value = "">Lägg till ny...</option>
+            <option value = "goal">Mål</option>
+            <option value = "comment">Kommentar</option>
+        </select>
+        <br>
+
+        <div id = "event-input-container" class="event-input-container">
+            <div class="event-input-base-wrapper">
+                <input class="event-input-id" type="hidden" value="">
+                <input class="event-input-type" type="hidden" value="">
+                <table>
+                    <tr>
+                        <td>Videokälla</td>
+                        <td>Tidsstämpel</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select class="event-input-video" onchange = "setEditTimeEnabled(this.value != -1);">
+                                <option value = "-1">Ingen video</option>
+                                {{#each videos as |video index|}}
+                                    {{#if link}}
+                                        <option value="{{video.id}}">Video {{inc @index}}</option>
+                                    {{/if}}
+                                {{/each}}
+                            </select>
+                        </td>
+                        <td>
+                            <div class="event-input-time-wrapper">
+                                <input class="event-input-minute" type="number" min="0" value="0"> : 
+                                <input class="event-input-second" type="number" min="0" value="0">
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="event-input-goal-wrapper">
+                <table>
+                    <tr>
+                        <td>Ny ställning</td>
+                        <td>Målgörare</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select class="event-input-home-goals">
+                                {{#each (repeat 100) as |_ index|}}
+                                    <option value = "{{index}}">{{index}}</option>
+                                {{/each}}
+                            </select>
+                            -
+                            <select class="event-input-away-goals">
+                                {{#each (repeat 100) as |_ index|}}
+                                    <option value = "{{index}}">{{index}}</option>
+                                {{/each}}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="event-input-scorer-team" onchange = "updateShooters(this);">
+                                <option value = "-1" selected disabled hidden>Välj lag...</option>
+                                <option value="{{teams.t1_id}}" pagename="{{teams.t1_pagename}}">{{teams.t1_name}}</option>
+                                <option value="{{teams.t2_id}}" pagename="{{teams.t2_pagename}}">{{teams.t2_name}}</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="event-input-scoring-wrapper">
+                <table>
+                    <tr>
+                        <td>Målskytt</td>
+                        <td>Assist</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <select class="event-input-scorer">
+                                <option value="-1">Ej angiven</option>
+                                <option value="-2">Lägg till ny...</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="event-input-assist">
+                                <option value="-1">Ej angiven</option>
+                                <option value="-2">Lägg till ny...</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="event-input-comment-wrapper">
+                <table>
+                    <tr>
+                        <td>Kommentar</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type = "text" class = "event-input-comment">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class = "event-input-submit">
+                <input id = "saveEventButton" type = "button" value = "Spara" onclick = "saveEvent();">
+                <input id = "hideEditButton" type = "button" value = "Avbryt" onclick = "hideEdit();">
+                <input id = "removeEventButton" type = "button" value = "Ta bort" onclick = "removeEvent();">
+            </div>
+        </div>
+    </div>
+    
+    {{#if (validvideo videos)}}
+        <div class = "left-column">
+            <h3>Preview</h3>
+            <div class = "yt-timestamping-wrapper">
+                <div id = "yt_player"></div>
+            </div>
+            <div class = "multiselect">
+                {{#each videos as |camera index|}}
+                    {{#if link}}
+                        <div class = "multioption camera {{ternary (eq index 0) 'selected' ''}}" offset = "{{ offset }}" filename = "{{ link }}" onclick = "setCamera(this);">[Kamera {{inc @index}}] {{ name }}</div>
+                    {{/if}}
+                {{/each}}
+            </div>
+        </div>
+    {{/if}}
+    
+    <script type = "text/javascript">
+    
+        function onYouTubeIframeAPIReady(){
+            console.log("YT IFRAME API loaded");
+            {{#if (validvideo videos)}}
+                initWatchPlayer("yt_player");
+            {{/if}}
+        };
+        
+        function reloadEvents(){
+            reloadEventsPreview("{{seriesName}}", "{{teamName}}", "{{gameId}}", "event-wrapper");
+        }
+        
+        function setEditType(eventType){
+            const container = document.getElementById("event-input-container");
+            const goalWrapper = container.getElementsByClassName("event-input-goal-wrapper")[0];
+            const scoringWrapper = container.getElementsByClassName("event-input-scoring-wrapper")[0];
+            const commentWrapper = container.getElementsByClassName("event-input-comment-wrapper")[0];
+            
+            let allWrappers = [goalWrapper, scoringWrapper, commentWrapper];
+            let showWrappers = [];
+            if (eventType == "goal"){
+                showWrappers = [goalWrapper, scoringWrapper];
+            } else if (eventType == "comment"){
+                showWrappers = [commentWrapper];
+            }
+            
+            for (let i = 0; i<allWrappers.length; i++){
+                if (!showWrappers.includes(allWrappers[i])){
+                    allWrappers[i].style.display = "none";
+                } else {
+                    allWrappers[i].style.display = "block";
+                }
+            }
+        }
+        
+        function setEditTimeEnabled(enable){
+            const editbox = document.getElementById("event-input-container");
+            const minute = editbox.getElementsByClassName("event-input-minute")[0];
+            const second = editbox.getElementsByClassName("event-input-second")[0];
+            if (enable){
+                minute.removeAttribute("disabled");
+                second.removeAttribute("disabled");
+            } else {
+                minute.setAttribute("disabled", "true");
+                second.setAttribute("disabled", "true");
+            }
+        }
+        
+        function showEdit(){
+            document.getElementById("event-input-container").style.display = "inline-block";
+            document.getElementsByClassName("event-wrapper")[0].className += " less-visible";
+        }
+        
+        function hideEdit(){
+            document.getElementById("event-input-container").style.display = "none";
+            const eventWrapper = document.getElementsByClassName("event-wrapper")[0];
+            eventWrapper.className = eventWrapper.className.split(" less-visible").join("");
+        }
+        
+        function saveEvent(){
+            // Save
+            const editbox = document.getElementById("event-input-container");
+            const eventId = editbox.getElementsByClassName("event-input-id")[0].value;
+            const eventType = editbox.getElementsByClassName("event-input-type")[0].value;
+            const videoId = getSelectValue(editbox.getElementsByClassName("event-input-video")[0]);
+            const minute = editbox.getElementsByClassName("event-input-minute")[0].value;
+            const second = editbox.getElementsByClassName("event-input-second")[0].value;
+            const timestamp = parseInt(minute)*60 + parseInt(second);
+            const t1Goals = getSelectValue(editbox.getElementsByClassName("event-input-home-goals")[0]);
+            const t2Goals = getSelectValue(editbox.getElementsByClassName("event-input-away-goals")[0]);
+            const scorerTeam = getSelectValue(editbox.getElementsByClassName("event-input-scorer-team")[0]);
+            const scorer = getSelectValue(editbox.getElementsByClassName("event-input-scorer")[0]);
+            const assist = getSelectValue(editbox.getElementsByClassName("event-input-assist")[0]);
+            const comment = editbox.getElementsByClassName("event-input-comment")[0].value;
+            
+            let finishUp = function(error){
+                if (error){
+                    console.log(error);
+                    document.getElementById("output_from_save").innerHTML = error;
+                }
+            
+                // Hide box
+                hideEdit();
+                
+                // Reload content
+                reloadEvents();
+            };
+            
+            if (eventType == "goal"){
+                updateOrAddGoal(eventId, "{{gameId}}", videoId, timestamp, t1Goals, t2Goals, scorerTeam, scorer, assist, finishUp);
+            } else if (eventType == "comment"){
+                updateOrAddComment(eventId, "{{gameId}}", videoId, timestamp, comment, finishUp)
+            }
+        }
+        
+        function removeEvent(){
+            // Remove
+            const editbox = document.getElementById("event-input-container");
+            const eventId = editbox.getElementsByClassName("event-input-id")[0].value;
+            const eventType = editbox.getElementsByClassName("event-input-type")[0].value;
+            
+            let finishUp = function(error){
+                if (error){
+                    console.log(error);
+                    document.getElementById("output_from_save").innerHTML = error;
+                }
+            
+                // Hide box
+                hideEdit();
+                
+                // Reload content
+                reloadEvents();
+            };
+
+            if (eventId) {
+                if (eventType == "goal"){
+                    removeGoal(eventId, finishUp);
+                } else if (eventType == "comment"){
+                    removeComment(eventId, finishUp);
+                } else {
+                    finishUp("Okänd händelse-typ");
+                }
+            } else {
+                finishUp("Kunde inte hitta eventet du ville ta bort");
+            }
+        }
+        
+        function addNew(selElement){
+            const eventType = selElement.options[selElement.selectedIndex].value;
+            selElement.selectedIndex = 0;
+            
+            setEditType(eventType);
+            
+            const timestamp = getWatchPlayerTime();
+            const minute = Math.floor(timestamp/60);
+            const second = Math.floor(timestamp%60);
+            
+            const editbox = document.getElementById("event-input-container");
+            editbox.getElementsByClassName("event-input-id")[0].value = "";
+            editbox.getElementsByClassName("event-input-type")[0].value = eventType;
+            editbox.getElementsByClassName("event-input-video")[0].selectedIndex = getWatchPlayerVideoIndex()+1;
+            editbox.getElementsByClassName("event-input-minute")[0].value = (minute < 10 ? "0" : "") + minute;
+            editbox.getElementsByClassName("event-input-second")[0].value = (second < 10 ? "0" : "") + second;
+            editbox.getElementsByClassName("event-input-home-goals")[0].selectedIndex = 0;
+            editbox.getElementsByClassName("event-input-away-goals")[0].selectedIndex = 0;
+            editbox.getElementsByClassName("event-input-scorer-team")[0].selectedIndex = 0;
+            editbox.getElementsByClassName("event-input-scorer")[0].selectedIndex = 0;
+            editbox.getElementsByClassName("event-input-assist")[0].selectedIndex = 0;
+            editbox.getElementsByClassName("event-input-comment")[0].value = "";
+            
+            setEditTimeEnabled(getSelectValue(editbox.getElementsByClassName("event-input-video")[0]) != -1);
+            document.getElementById("removeEventButton").className += " hidden";
+            
+            showEdit();
+        }
+        
+        function editEvent(wrapper){
+            const eventId = wrapper.getAttribute("event-id");
+            const eventType = wrapper.getAttribute("event-type");
+            const videoIndex = wrapper.getAttribute("video-index");
+            const comment = wrapper.getAttribute("comment");
+            const t1Goals = wrapper.getAttribute("t1_goals");
+            const t2Goals = wrapper.getAttribute("t2_goals");
+            const teamId = wrapper.getAttribute("team-id");
+            const scorerId = wrapper.getAttribute("scorer_id");
+            const scorerName = wrapper.getAttribute("scorer_name");
+            const scorerPagename = wrapper.getAttribute("scorer_pagename");
+            const assistId = wrapper.getAttribute("assist_id");
+            const assistName = wrapper.getAttribute("assist_name");
+            const assistPagename = wrapper.getAttribute("assist_pagename");
+            
+            const timestamp = parseInt(wrapper.getAttribute("timestamp"));
+            
+            setEditType(eventType);
+            
+            const removeButton = document.getElementById("removeEventButton");
+            removeButton.className = removeButton.className.split(" hidden").join("");
+            
+            const editbox = document.getElementById("event-input-container");
+            editbox.getElementsByClassName("event-input-id")[0].value = parseInt(eventId);
+            editbox.getElementsByClassName("event-input-type")[0].value = eventType;
+            editbox.getElementsByClassName("event-input-video")[0].selectedIndex = parseInt(videoIndex)+1;
+            const minute = Math.floor(timestamp/60);
+            const second = Math.floor(timestamp%60);
+            editbox.getElementsByClassName("event-input-minute")[0].value = (minute < 10 ? "0" : "") + minute;
+            editbox.getElementsByClassName("event-input-second")[0].value = (second < 10 ? "0" : "") + second;
+            
+            setEditTimeEnabled(getSelectValue(editbox.getElementsByClassName("event-input-video")[0]) != -1);
+            
+            if (eventType == "goal"){
+                editbox.getElementsByClassName("event-input-home-goals")[0].selectedIndex = parseInt(t1Goals);
+                editbox.getElementsByClassName("event-input-away-goals")[0].selectedIndex = parseInt(t2Goals);
+                const scorerTeamSel = editbox.getElementsByClassName("event-input-scorer-team")[0];
+                let teamChanged = false;
+                for (let i = 0; i<scorerTeamSel.options.length; i++){
+                    if (scorerTeamSel.options[i].value == teamId){
+                        teamChanged = scorerTeamSel.selectedIndex != i;
+                        scorerTeamSel.selectedIndex = i;
+                        break;
+                    }
+                }
+                
+                let updateScorerAndAssister = function(){
+                    const scorerSel = editbox.getElementsByClassName("event-input-scorer")[0];
+                    for (let i = 0; i<scorerSel.options.length; i++){
+                        if (scorerSel.options[i].value == scorerId){
+                            scorerSel.selectedIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    const assistSel = editbox.getElementsByClassName("event-input-assist")[0];
+                    for (let i = 0; i<assistSel.options.length; i++){
+                        if (assistSel.options[i].value == assistId){
+                            assistSel.selectedIndex = i;
+                            break;
+                        }
+                    }
+                };
+                
+                if (teamChanged){
+                    updateShooters(scorerTeamSel, updateScorerAndAssister);
+                } else {
+                    updateScorerAndAssister();
+                }
+            } else if (eventType == "comment"){
+                editbox.getElementsByClassName("event-input-comment")[0].value = comment;
+            }
+            
+            showEdit();
+        }
+        
+        function getSelectValue(sel){
+            return sel.options[sel.selectedIndex].value;
+        }
+        
+        function gotoEvent(wrapper){
+            const videoIndex = parseInt(wrapper.getAttribute("video-index"));
+            const offset = parseInt(wrapper.getAttribute("timestamp"));
+            setTimeAndView(videoIndex, offset);
+        }
+        
+        function updateShooters(teamSelector, callback){
+            const mainWrapper = teamSelector.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
+            const teamName = teamSelector.options[teamSelector.selectedIndex].getAttribute("pagename");
+            const scorers = mainWrapper.getElementsByClassName("event-input-scorer")[0];
+            for (let i = scorers.options.length - 1 ; i >= 2 ; i--) scorers.remove(i);
+            const assisters = mainWrapper.getElementsByClassName("event-input-assist")[0];
+            for (let i = assisters.options.length - 1 ; i >= 2 ; i--) assisters.remove(i);
+            
+            const selects = [scorers, assisters];
+            loadPlayersInTeam(teamName, function(result){
+                for (let i = 0; i<result.players.length; i++){
+                    for (let j = 0; j<selects.length; j++){
+                        let player = result.players[i];
+                        let option = document.createElement("option");
+                        option.value = player.player_id;
+                        option.innerHTML = player.name;
+                        option.setAttribute("pagename", player.pagename);
+                        selects[j].appendChild(option);
+                    }
+                }
+                
+                if (callback) callback();
+            });
+        }
+    </script>
+{{/if}}
