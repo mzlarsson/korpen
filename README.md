@@ -20,6 +20,15 @@ The repository contains a package.json containing listing all necessary packages
 4. Manually add a series and the teams in it to start the sync. In the future I might add so it automatically adds the teams.
 5. Unless the series table is hosted at http://korpengbg.se you might want to update the page parser in ```remote_syncer.js```. This is the hard part ;)
 
+## Running the server
+To start the server, simply run ``` node index.js ```. This will run on *port 9457*.
+If you want to specify a custom port, just edit index.js at the end.
+
+## Extra utilities
+There is a tool called NodeAdmin that can be used to visualize databases and tables. A small wrapper script for this tool has been provided. In order to use it, first install nodeadmin with the command ```npm install nodeadmin```.  
+Run the utility with the command ```node dbadmin.js``` and open [your local NodeAdmin](http://localhost:1338/nodeadmin). It runs on port 1338.
+
+
 ### Detailed description of installation
 If you feel a bit confused and want some extra help to get started, here is a guide to setup everything (tested on a Debian system).
 
@@ -54,11 +63,3 @@ mysql --user=root --password=your_root_password < db_setup.sql
 
 ##### Step 3
 Be happy! If everything goes as planned, the DB should be setup and ready to use.
-
-## Running the server
-To start the server, simply run ``` node index.js ```. This will run on *port 9457*.
-If you want to specify a custom port, just edit index.js at the end.
-
-## Extra utilities
-There is a tool called NodeAdmin that can be used to visualize databases and tables. A small wrapper script for this tool has been provided. In order to use it, first install nodeadmin with the command ```npm install nodeadmin```.  
-Run the utility with the command ```node dbadmin.js``` and open [your local NodeAdmin](http://localhost:1338/nodeadmin). It runs on port 1338.
