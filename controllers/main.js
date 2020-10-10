@@ -44,7 +44,7 @@ module.exports = function(model){
         });
     });
     
-    router.get("/series/:seriesName/:teamName/events/:gameId?", (req, res) => {
+    router.get("/series/:seriesName/:teamName/events/:gameId", (req, res) => {
         model.getEditEventsData(req.params.seriesName, req.params.teamName, req.params.gameId).then(function(data){
             data["serviceName"] = "upload";
             data["editable"] = true;
@@ -52,7 +52,7 @@ module.exports = function(model){
         });
     });
     
-    router.get("/series/:seriesName/:teamName/events/:gameId?/editpanel", (req, res) => {
+    router.get("/series/:seriesName/:teamName/events/:gameId/editpanel", (req, res) => {
         model.getEditEventsData(req.params.seriesName, req.params.teamName, req.params.gameId).then(function(data){
             data["serviceName"] = "upload";
             data["partialOnly"] = true;
@@ -63,6 +63,14 @@ module.exports = function(model){
         });
     });
     
+    router.get("/series/:seriesName/:teamName/troops/:gameId", (req, res) => {
+        model.getEditEventsData(req.params.seriesName, req.params.teamName, req.params.gameId).then(function(data){
+            data["serviceName"] = "upload";
+            data["partialOnly"] = true;
+            res.render("partials/preview_troops", data);
+        });
+    });
+    
     router.get("/series/:seriesName/:teamName/settings", (req, res) => {
         model.getTeamData(req.params.seriesName, req.params.teamName).then(function(data){
             data["serviceName"] = "settings";
@@ -70,11 +78,17 @@ module.exports = function(model){
         });
     });
     
+    router.get("/series/:seriesName/:teamName/player/:playerName", (req, res) => {
+        model.getPlayerData(req.params.seriesName, req.params.teamName, req.params.playerName).then(function(data){
+            res.render("player", data);
+        });
+    });
+    
     
     router.post("/api/video/update", (req, res) => {
         const authKey = "hash";
-        model.updateOrAddVideo(authKey, req.body.game_id, req.body.video_id, req.body.video_index, req.body.name, req.body.offset, req.body.service, req.body.link).then(function(sucess){
-            res.json(result);
+        model.updateOrAddVideo(authKey, req.body.game_id, req.body.video_id, req.body.video_index, req.body.name, req.body.offset, req.body.service, req.body.link).then(function(success){
+            res.json(success);
         }, function(errorMsg) {
             res.json({"error": errorMsg});
         });
@@ -116,6 +130,24 @@ module.exports = function(model){
         } else {
             res.json({"error": "Invalid event type"});
         }
+    });
+    
+    router.post("/api/participation/add", (req, res) => {
+        const authKey = "hash";
+        model.addParticipation(authKey, req.body.game_id, req.body.player_id).then(function(success){
+            res.json(success);
+        }, function(errorMsg) {
+            res.json({"error": errorMsg});
+        });
+    });
+    
+    router.post("/api/participation/remove", (req, res) => {
+        const authKey = "hash";
+        model.removeParticipation(authKey, req.body.game_id, req.body.player_id).then(function(success){
+            res.json(success);
+        }, function(errorMsg) {
+            res.json({"error": errorMsg});
+        });
     });
     
     router.get("/api/team/players/:teamName", (req, res) => {

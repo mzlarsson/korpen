@@ -49,6 +49,28 @@ exports.getTeamData = function(seriesName, teamName){
 
 };
 
+exports.getPlayerData = function(seriesName, teamName, playerName){
+    
+    var info = {};
+    info["seriesName"] = seriesName;
+    info["teamName"] = teamName;
+    info["playerName"] = playerName;
+    
+    return getAllSeries(info).then(getStandings).then(getPlayerInfo).then(getPlayerHighlights).then(getPlayerParticipation).then(function(result){
+        // Finish up
+        if (result["standings"].length == 0){
+            result["error"] = "Kunde inte hitta den sökta serien";
+        } else if (!result["player"]){
+            result["error"] = "Spelaren du angav kunde inte hittas";
+        } else{
+            result["seriesDisplayName"] = result["standings"][0].series_name + " (" + result["standings"][0].year + ")";
+            result["yt_api"] = true;
+        }
+        return result;
+    });
+
+};
+
 exports.getWatchData = function(seriesName, teamName, gameId){
     
     var info = {};
@@ -108,7 +130,7 @@ exports.getAddVideoData = function(seriesName, teamName, gameId){
         }
         return info;
         
-    }).then(getVideoFromGame).then(getVideoHighlights).then(getAvailableVideoServices).then(function(result){
+    }).then(getVideoFromGame).then(getVideoHighlights).then(getPlayersInGame).then(getTeamsInGame).then(getAvailableVideoServices).then(function(result){
         // Finish up
         if (result["standings"].length == 0){
             result["error"] = "Kunde inte hitta den sökta serien";
@@ -130,7 +152,7 @@ exports.getAddVideoData = function(seriesName, teamName, gameId){
 
 exports.getEditEventsData = function(seriesName, teamName, gameId){
     
-    return exports.getAddVideoData(seriesName, teamName, gameId).then(getTeamsInGame);
+    return exports.getAddVideoData(seriesName, teamName, gameId);
     
 }
 
@@ -227,6 +249,29 @@ exports.updateOrAddComment = function(authKey, eventId, gameId, videoId, timesta
     });
 };
 
+exports.addParticipation = function(authKey, gameId, playerId){
+    
+    var info = {};
+    info["gameId"] = gameId;
+    info["playerId"] = playerId;
+    
+    return getGameInfo(info).then(function(result){
+        // Setup verification
+        result["verification"] = {
+            "auth": authKey,
+            "action": PERMISSION_ADD,
+            "property": "participation",
+            "team1": result["game"] ? result["game"]["teamhome_id"] : -1,
+            "team2": result["game"] ? result["game"]["teamaway_id"] : -1
+        };
+        return result;
+    }).then(verifyPermissions).then(addParticipation).then(function(result){
+        // TODO: Reformat before sending to user.
+        return result["query_result"];
+    });
+};
+
+
 exports.removeGoal = function(authKey, eventId){
     
     var info = {};
@@ -275,6 +320,28 @@ exports.removeComment = function(authKey, eventId){
     });
 };
 
+exports.removeParticipation = function(authKey, gameId, playerId){
+    
+    var info = {};
+    info["gameId"] = gameId;
+    info["playerId"] = playerId;
+    
+    return getGameInfo(info).then(function(result){
+        // Setup verification
+        result["verification"] = {
+            "auth": authKey,
+            "action": PERMISSION_REMOVE,
+            "property": "participation",
+            "team1": result["game"] ? result["game"]["teamhome_id"] : -1,
+            "team2": result["game"] ? result["game"]["teamaway_id"] : -1
+        };
+        return result;
+    }).then(verifyPermissions).then(removeParticipation).then(function(result){
+        // TODO: Reformat before sending to user.
+        return result["query_result"];
+    });
+};
+
 
 
 function getAllSeries(info){
@@ -310,21 +377,23 @@ function getUpcomingGames(info){
     return new Promise((resolve, reject) => {
         
         var data = [info["seriesName"]];
-        var filterOnTeam = "";
+        var extraSelectionParams = "";
         if (info["teamName"]){
             data = [info["seriesName"], info["teamName"], info["teamName"]];
-            filterOnTeam = "AND (T1.pagename = ? OR T2.pagename = ?) ";
+            extraSelectionParams = "AND (T1.pagename = ? OR T2.pagename = ?) ";
+        } else{
+            extraSelectionParams = "AND (G.playdate < NOW() + INTERVAL 7 DAY) "; 
         }
         
         const query = "SELECT T1.name AS t1_name, T1.pagename AS t1_pagename, T2.name AS t2_name, T2.pagename AS t2_pagename, \
                               G.teamhome_score AS t1_score, G.teamaway_score AS t2_score, G2.teamhome_score AS t2_score_prev, G2.teamaway_score AS t1_score_prev, \
-                              G.playdate AS playdate, G.location AS location \
+                              G.playdate AS playdate, G.location AS location, G.playdate < NOW() as started \
                        FROM game G \
                        LEFT JOIN team T1 ON T1.id = G.teamhome_id \
                        LEFT JOIN team T2 ON T2.id = G.teamaway_id \
                        LEFT JOIN series S ON S.id = T1.series_id \
                        LEFT JOIN game G2 ON G2.teamhome_id = G.teamaway_id AND G2.teamaway_id = G.teamhome_id \
-                       WHERE S.pagename = ? AND G.playdate > NOW() AND G.playdate < NOW() + INTERVAL 7 DAY " + filterOnTeam + " \
+                       WHERE S.pagename = ? AND (G.playdate > NOW() - INTERVAL 1 HOUR) " + extraSelectionParams + " \
                        ORDER BY playdate ASC";
         
         db.query(query, data, function(result){
@@ -355,7 +424,7 @@ function getLatestGames(info){
                        LEFT JOIN series S ON S.id = T1.series_id \
                        LEFT JOIN game G2 ON G2.teamhome_id = G.teamaway_id AND G2.teamaway_id = G.teamhome_id AND G2.playdate < G.playdate \
                        LEFT JOIN (SELECT game_id, MIN(platform) AS platform, MIN(link) AS link FROM video V2 GROUP BY V2.game_id) V ON V.game_id = G.id \
-                       WHERE S.pagename = ? AND G.playdate < NOW() AND G.playdate > NOW() - INTERVAL 7 DAY AND G.teamhome_score IS NOT NULL " + filterOnTeam + "\
+                       WHERE S.pagename = ? AND (G.playdate < NOW() - INTERVAL 1 HOUR) AND (G.playdate > NOW() - INTERVAL 7 DAY) " + filterOnTeam + "\
                        ORDER BY G.playdate DESC, G.location ASC";
         
         db.query(query, data, function(result){
@@ -385,7 +454,7 @@ function getPreviousGames(info){
                        LEFT JOIN series S ON S.id = T1.series_id \
                        LEFT JOIN game G2 ON G2.teamhome_id = G.teamaway_id AND G2.teamaway_id = G.teamhome_id AND G2.playdate < G.playdate \
                        LEFT JOIN (SELECT game_id, MIN(platform) AS platform, MIN(link) AS link FROM video V2 GROUP BY V2.game_id) V ON V.game_id = G.id \
-                       WHERE S.pagename = ? AND G.playdate < NOW() AND G.teamhome_score IS NOT NULL " + filterOnTeam + " \
+                       WHERE S.pagename = ? AND (G.playdate < NOW() - INTERVAL 1 HOUR) " + filterOnTeam + " \
                        ORDER BY G.playdate DESC";
         
         db.query(query, data, function(result){
@@ -582,6 +651,23 @@ function getGoalInfo(info){
     });
 }
 
+function getPlayerInfo(info){
+    
+    return new Promise((resolve, reject) => {
+        
+        if (info["playerName"]){
+            const query = "SELECT * FROM player WHERE pagename = ? LIMIT 1";
+
+            db.query(query, [info["playerName"]], function(result){
+                info["player"] = result.length > 0 ? JSON.parse(JSON.stringify(result[0])) : undefined;
+                resolve(info);
+            });
+        } else {
+            resolve(info);
+        }
+    });
+}
+
 function getCommentInfo(info){
     
     return new Promise((resolve, reject) => {
@@ -630,6 +716,72 @@ function getPlayersFromTeam(info){
     });
 }
 
+function getPlayersInGame(info){
+
+    return new Promise((resolve, reject) => {
+        
+        const query = "SELECT PL.team_id AS team_id, PL.id AS player_id, PL.pagename AS pagename, PL.name AS name FROM participation PA LEFT JOIN player PL ON PL.id = PA.player_id WHERE PA.game_id = ?";
+
+        db.query(query, [info["gameId"]], function(result){
+            const data = JSON.parse(JSON.stringify(result));
+            info["troops"] = {};
+            for (let i = 0; i<data.length; i++){
+                if (!info["troops"][data[i].team_id]){
+                    info["troops"][data[i].team_id] = [];
+                }
+                info["troops"][data[i].team_id].push(data[i]);
+            }
+            resolve(info);
+        });
+    });
+}
+
+function getPlayerHighlights(info){
+
+    return new Promise((resolve, reject) => {
+        
+        if (info["playerName"]){
+            const query = "SELECT V.platform AS platform, V.link AS link, V.game_id AS game_id,  \
+                                  G.timestamp AS timestamp, G.teamhome_goals AS t1_goals, G.teamaway_goals AS t2_goals, \
+                                  P1.name AS p1_name, P1.pagename AS p1_pagename, P2.name AS p2_name, P2.pagename AS p2_pagename \
+                           FROM goal G \
+                           LEFT JOIN video V ON V.id = G.video_id \
+                           LEFT JOIN player P1 ON P1.id = G.goal_player_id \
+                           LEFT JOIN player P2 ON P2.id = G.assist_player_id \
+                           WHERE P1.pagename = ? OR P2.pagename = ?";
+
+            db.query(query, [info["playerName"], info["playerName"]], function(result){
+                info["player_highlights"] = JSON.parse(JSON.stringify(result));
+                resolve(info);
+            });
+        } else {
+            resolve(info);
+        }
+    });
+}
+
+function getPlayerParticipation(info){
+
+    return new Promise((resolve, reject) => {
+        
+        if (info["playerName"]){
+            const query = "SELECT G.id AS game_id, T1.name AS t1_name, T1.pagename AS t1_pagename, T2.name AS t2_name, T2.pagename AS t2_pagename, G.teamhome_score AS t1_score, G.teamaway_score AS t2_score \
+                           FROM participation PA \
+                           LEFT JOIN player P ON P.id = PA.player_id \
+                           LEFT JOIN game G ON G.id = PA.game_id \
+                           LEFT JOIN team T1 ON T1.id = G.teamhome_id \
+                           LEFT JOIN team T2 ON T2.id = G.teamaway_id \
+                           WHERE P.pagename = ?";
+
+            db.query(query, [info["playerName"]], function(result){
+                info["player_participation"] = JSON.parse(JSON.stringify(result));
+                resolve(info);
+            });
+        } else {
+            resolve(info);
+        }
+    });
+}
 
 
 function verifyPermissions(info){
@@ -755,6 +907,24 @@ function updateOrAddComment(info){
     });
 }
 
+function addParticipation(info){
+    
+    return new Promise((resolve, reject) => {
+        
+        if (info["gameId"] && info["playerId"]){
+            const query = "INSERT INTO participation (game_id, player_id) VALUES (?, ?)";
+            
+            db.query(query, [info["gameId"], info["playerId"]], function(result){
+                info["query_result"] = JSON.parse(JSON.stringify(result));
+                resolve(info);
+            });
+        }
+        else{
+            reject("Could not find the player to add to game");
+        }
+    });
+}
+
 function removeGoal(info){
     
     return new Promise((resolve, reject) => {
@@ -777,7 +947,6 @@ function removeComment(info){
     
     return new Promise((resolve, reject) => {
         
-        console.log("removing comment with id " + info["eventId"]);
         if (info["eventId"]){
             const query = "DELETE FROM comment WHERE id = ? LIMIT 1";
             
@@ -788,6 +957,24 @@ function removeComment(info){
         }
         else{
             reject("Could not find the event to remove");
+        }
+    });
+}
+
+function removeParticipation(info){
+    
+    return new Promise((resolve, reject) => {
+        
+        if (info["gameId"] && info["playerId"]){
+            const query = "DELETE FROM participation WHERE game_id = ? AND player_id = ? LIMIT 1";
+            
+            db.query(query, [info["gameId"], info["playerId"]], function(result){
+                info["query_result"] = JSON.parse(JSON.stringify(result));
+                resolve(info);
+            });
+        }
+        else{
+            reject("Could not find the player/game to remove from participation");
         }
     });
 }

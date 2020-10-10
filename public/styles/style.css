@@ -34,6 +34,9 @@ table{
 .grayed-out{
     color:#888888;
 }
+.mobile-view{
+    display:none;
+}
 select.centered{
     display:block;
     margin:0 auto;
@@ -164,6 +167,7 @@ a:link, a:visited, a:active{
 
 .match-wrapper{
     display:flex;
+    flex-wrap:wrap;
     padding: 10px;
     border: 1px solid #cccccc;
     margin: 10px 0px;
@@ -176,11 +180,8 @@ a:link, a:visited, a:active{
     flex-wrap:wrap;
 }
 .match-game{
-    /*display:flex;*/
+    display:flex;
     flex:1;
-}
-.match-game div{
-    display:inline-block;
 }
 .match-result-team{
     width: 125px;
@@ -213,13 +214,39 @@ a:link, a:visited, a:active{
 .match-thumbnail{
     width:120px;
     height:90px;
-}
-    
+}    
 .match-no-thumbnail{
     margin-left: 30px;
     line-height:40px;
     vertical-align:center;
     color:#aaaaaa;
+}
+
+
+.upcoming-wrapper{
+    display:flex;
+    padding: 10px;
+    border: 1px solid #cccccc;
+    margin: 10px 0px;
+}
+.upcoming-wrapper.started{
+    opacity: 0.7;
+}
+.upcoming-middle-wrapper{
+    flex:1;
+}
+.upcoming-inner-wrapper{
+    display:flex;
+    flex-wrap:wrap;
+}
+.upcoming-game{
+    flex-grow:1;
+}
+.upcoming-playdate{
+    width: 200px;
+}
+.upcoming-lastgame{
+    font-size:0.75em;
 }
 
 .allgames-date{
@@ -381,6 +408,10 @@ input.video-input-link{
 .textbox-with-color.camera-3{
     background-color:#80000080;
 }
+.troops-list-wrapper{
+    max-width:400px;
+    margin-bottom:5px;
+}
 /* ---------------------------------- */
 .event-wrapper{
     margin-bottom:20px;
@@ -457,11 +488,45 @@ input.video-input-link{
     content:"Video"; 
 }
 
+#table-enums-video-link-yes:after{
+    content:"Titta här"; 
+}
+#table-enums-video-link-no:after{
+    content:"Inte än"; 
+}
+
+/* --------------------------------------------------- */
+.player-game-wrapper{
+    margin-top:10px;
+    margin-bottom:2px;
+    padding:10px 10px;
+    border:1px solid #cccccc;
+}
+.player-game-result-wrapper{
+}
+.player-game-highlight-wrapper, .player-game-highlight-empty-wrapper {
+    padding: 4px 0px 4px 10px;
+    font-size: 0.9em;
+}
+.player-game-highlight-wrapper:hover {
+    background:#cccccc;
+    cursor: pointer;
+    cursor:hand;
+}
 
 
 
 /* ------------------- MOBILE ---------------------------- */
 @media only screen and (max-width: 600px) {
+    
+    a:link, a:visited, a:active{
+        color:#000020;
+        text-decoration:none;
+    }
+    a:hover{
+        opacity: 0.7;
+    }
+    
     .left-column{
         margin-right:0px;
     }
@@ -507,6 +572,54 @@ input.video-input-link{
         margin-right: 0px;
     }
     
+    .pc-view{
+        display:none;
+    }
+    .mobile-view{
+        display:unset;
+    }
+    h3.mobile-view{
+        display:block;
+        margin-top:3em;
+    }
+    
+    .match-wrapper,.upcoming-wrapper{
+        width:100%;
+        box-sizing: border-box;
+    }
+    .upcoming-playdate, .upcoming-location{
+        font-size:0.9em;
+        width:unset;
+    }
+    .upcoming-playdate-and-location{
+        text-align:right;
+    }
+    
+    
+    .match-result-team{
+        width:130px;
+    }
+    .match-middle-wrapper{
+        width:100%;
+    }
+    .match-watch-link{
+        display:block;
+        width:100%;
+        margin-top:3px;
+        text-align:center;
+    }
+    
+    .video-player-wrapper{
+        flex-wrap:wrap-reverse;
+    }
+    .yt-player-wrapper{
+        width:100%;
+        height:auto;
+    }
+    .yt-timestamping-wrapper{
+        width:100%;
+        height:auto;
+    }
     
     .table-wrapper{
         padding:6px;
@@ -550,5 +663,16 @@ input.video-input-link{
     }
     #table-header-video:after{
         content:"Video"; 
+    }
+    #table-enums-video-link-yes:after{
+        display: inline-block;
+        content:"";
+        width: 16px; 
+        height: 16px;
+        background-image: url('/imgs/goto.png');
+        background-size: 16px 16px;
+    }
+    #table-enums-video-link-no:after{
+        content:""; 
     }
 }

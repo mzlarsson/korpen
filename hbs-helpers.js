@@ -31,6 +31,10 @@ module.exports = {
     {
         return !value;
     },
+    empty: function(value, options)
+    {
+        return !value || value.length <= 0;
+    },
     twodig: function(value, options)
     {
         return value < 10 ? "0" + value : "" + value;
@@ -38,6 +42,28 @@ module.exports = {
     isnumber: function(value, options)
     {
         return value !== undefined && value !== null && !isNaN(value);
+    },
+    len: function(value, options)
+    {
+        return value.length;
+    },
+    dict: function(arr, key, options)
+    {
+        if (arr && arr[key]) {
+            return arr[key];
+        } else {
+            return [];
+        }
+    },
+    countentries: function(collection, key, searchValue)
+    {
+        let result = 0;
+        for(let i = 0; i<collection.length; i++){
+            if (collection[i][key] == searchValue){
+                result += 1;
+            }
+        }
+        return result;
     },
     repeat: function(value, options)
     {
@@ -54,6 +80,12 @@ module.exports = {
         const months = ["Jan", "Feb", "Mar", "Apr", "Maj", "Juni", "Juli", "Aug", "Sep", "Okt", "Nov", "Dec"];
         const d = new Date(dateStr);
         return days[d.getDay()] + " " + d.getDate() + " " + months[d.getMonth()] + " " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
+    },
+    mobiledatetime: function(dateStr, options)
+    {
+        const days = ["Sön", "Mån", "Tis", "Ons", "Tors", "Fre", "Lör"];
+        const d = new Date(dateStr);
+        return days[d.getDay()] + " " + d.getDate() + "/" + (d.getMonth()+1) + " " + (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes();
     },
     camera: function(camera_index, options)
     {
@@ -99,6 +131,8 @@ module.exports = {
         
         if (!played(t1ScoreG1, t2ScoreG1)){
             return "Det här är första gången de här lagen möts i år.";
+        } else if (!played(t1ScoreG2, t2ScoreG2)) {
+            return "Resultatet för denna match har inte blivit inrapporterat än.";
         } else {
             if (win(t1ScoreG1, t2ScoreG1)){
                 if (win(t1ScoreG2, t2ScoreG2)){

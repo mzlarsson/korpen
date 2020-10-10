@@ -1,0 +1,64 @@
+{{#if error}}
+    <div class = "full-size center-contents info-message">
+        {{error}}
+    </div>
+{{else}}
+    <h3>{{player.name}}</h3>
+    
+    <div class = "player-game-stats">
+        {{countentries player_highlights "p1_pagename" playerName}} mål
+        {{countentries player_highlights "p2_pagename" playerName}} assist
+    </div>
+        
+    <div class = "left-column">
+        {{#each player_participation as |game index|}}
+            <div class = "player-game-wrapper">
+                <div class = "player-game-result-wrapper">
+                    <a href = "/series/{{../seriesName}}/{{game.t1_pagename}}/">{{game.t1_name}}</a> - 
+                    <a href = "/series/{{../seriesName}}/{{game.t2_pagename}}/">{{game.t2_name}}</a>
+                    ({{score game.t1_score}} - {{score game.t2_score}})
+                </div>
+            
+                {{#each ../player_highlights as |highlight index2|}}
+                    {{#if (eq highlight.game_id game.game_id)}}
+                        <div class = "player-game-highlight-wrapper" video_platform = "{{highlight.platform}}" video_link = "{{highlight.link}}" video_timestamp = "{{highlight.timestamp}}" onclick = "showVideo(this);">
+                            {{highlight.t1_goals}} - {{highlight.t2_goals}}
+                            <a href = "/series/{{../../seriesName}}/{{../../teamName}}/player/{{highlight.p1_pagename}}/">{{highlight.p1_name}}</a>
+                            {{#if highlight.p2_name}}
+                                (<a href = "/series/{{../../seriesName}}/{{../../teamName}}/player/{{highlight.p2_pagename}}/">{{highlight.p2_name}}</a>)
+                            {{/if}}
+                        </div>
+                    {{/if}}
+                {{/each}}
+                
+                {{#if (eq (countentries ../player_highlights "game_id" game.game_id) 0)}}
+                    <div class = "player-game-highlight-empty-wrapper">
+                        Inga poäng.
+                    </div>
+                {{/if}}
+            </div>
+        {{/each}}
+    </div>
+    
+    <div class = "left-column">
+        <div class = "yt-timestamping-wrapper">
+            <div id = "yt-player">
+                Klicka på ett mål för att se det.
+            </div>
+        </div>
+    </div>
+    
+    <script type = "text/javascript">
+    
+        var apiReady = false;
+
+        function onYouTubeIframeAPIReady(){
+            console.log("YT IFRAME API loaded");
+            apiReady = true;
+        };
+        
+        function showVideo(element){
+            setCameraRaw(element.getAttribute("video_platform"), "yt-player", element.getAttribute("video_link"), element.getAttribute("video_timestamp"));
+        }
+    </script>
+{{/if}}

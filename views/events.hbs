@@ -70,7 +70,7 @@
                             </select>
                         </td>
                         <td>
-                            <select class="event-input-scorer-team" onchange = "updateShooters(this);">
+                            <select class="event-input-scorer-team" onchange = "updateShootersInEventEdit(this);">
                                 <option value = "-1" selected disabled hidden>Välj lag...</option>
                                 <option value="{{teams.t1_id}}" pagename="{{teams.t1_pagename}}">{{teams.t1_name}}</option>
                                 <option value="{{teams.t2_id}}" pagename="{{teams.t2_pagename}}">{{teams.t2_name}}</option>
@@ -122,6 +122,26 @@
                 <input id = "removeEventButton" type = "button" value = "Ta bort" onclick = "removeEvent();">
             </div>
         </div>
+        
+        <h3></h3>
+        <div id = "troops-wrapper">
+            {{> preview_troops }}
+        </div>
+        
+        <div class = "edit-troops-wrapper">
+            <select class = "edit-troops-team" onchange = "updateShootersInTroopsEdit(this);">
+                <option value = "-1" selected disabled hidden>Välj lag...</option>
+                <option value="{{teams.t1_id}}" pagename="{{teams.t1_pagename}}">{{teams.t1_name}}</option>
+                <option value="{{teams.t2_id}}" pagename="{{teams.t2_pagename}}">{{teams.t2_name}}</option>
+            </select>
+            
+            <select id = "edit-troops-player" onchange = "showCorrectParticipationButton(this.value);">
+                <option value = "-1" selected disabled hidden>Välj spelare...</option>
+            </select>
+            
+            <input id = "addParticipationButton" type = "button" value = "Lägg till" onclick = "addParticipation();" disabled>
+            <input id = "removeParticipationButton" type = "button" value = "Ta bort" onclick = "removeParticipation();" disabled>
+        </div>
     </div>
     
     {{#if (validvideo videos)}}
@@ -141,6 +161,15 @@
     {{/if}}
     
     <script type = "text/javascript">
+    
+        const troops = [
+            {{#each (dict troops teams.t1_id) as |player index|}}
+                {{player.player_id}},
+            {{/each}}
+            {{#each (dict troops teams.t2_id) as |player index|}}
+                {{player.player_id}},
+            {{/each}}
+        ]; 
     
         function onYouTubeIframeAPIReady(){
             console.log("YT IFRAME API loaded");
@@ -268,6 +297,41 @@
             }
         }
         
+        function showCorrectParticipationButton(val){
+            if (troops.includes(parseInt(val))){
+                document.getElementById("addParticipationButton").setAttribute("disabled", "true");
+                document.getElementById("removeParticipationButton").removeAttribute("disabled");
+            } else {
+                document.getElementById("addParticipationButton").removeAttribute("disabled");
+                document.getElementById("removeParticipationButton").setAttribute("disabled", "true");
+            }
+        }
+        
+        function addParticipation(){
+            const playerId = parseInt(getSelectValue(document.getElementById("edit-troops-player")));
+            if (!troops.includes(playerId)){
+                troops.push(playerId);
+            }
+            
+            addParticipationFromGame("{{gameId}}", playerId, function(error){
+                reloadTroops("{{seriesName}}", "{{teamName}}", "{{gameId}}", "troops-wrapper");
+                showCorrectParticipationButton(playerId);
+            });
+        }
+        
+        function removeParticipation(){
+            const playerId = parseInt(getSelectValue(document.getElementById("edit-troops-player")));
+            const troopIndex = troops.indexOf(playerId);
+            if (troopIndex >= 0){
+                troops.splice(troopIndex, 1);
+            }
+            
+            removeParticipationFromGame("{{gameId}}", playerId, function(error){
+                reloadTroops("{{seriesName}}", "{{teamName}}", "{{gameId}}", "troops-wrapper");
+                showCorrectParticipationButton(playerId);
+            });
+        }
+        
         function addNew(selElement){
             const eventType = selElement.options[selElement.selectedIndex].value;
             selElement.selectedIndex = 0;
@@ -362,7 +426,7 @@
                 };
                 
                 if (teamChanged){
-                    updateShooters(scorerTeamSel, updateScorerAndAssister);
+                    updateShootersInEventEdit(scorerTeamSel, updateScorerAndAssister);
                 } else {
                     updateScorerAndAssister();
                 }
@@ -383,15 +447,27 @@
             setTimeAndView(videoIndex, offset);
         }
         
-        function updateShooters(teamSelector, callback){
+        function updateShootersInEventEdit(teamSelector, callback){
             const mainWrapper = teamSelector.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode;
-            const teamName = teamSelector.options[teamSelector.selectedIndex].getAttribute("pagename");
             const scorers = mainWrapper.getElementsByClassName("event-input-scorer")[0];
-            for (let i = scorers.options.length - 1 ; i >= 2 ; i--) scorers.remove(i);
             const assisters = mainWrapper.getElementsByClassName("event-input-assist")[0];
+            for (let i = scorers.options.length - 1 ; i >= 2 ; i--) scorers.remove(i);
             for (let i = assisters.options.length - 1 ; i >= 2 ; i--) assisters.remove(i);
             
-            const selects = [scorers, assisters];
+            updateShooters(teamSelector, [scorers, assisters], callback);
+        }
+        
+        function updateShootersInTroopsEdit(teamSelector, callback){
+            const player = document.getElementById("edit-troops-player");
+            for (let i = player.options.length - 1 ; i >= 1 ; i--) player.remove(i);
+            
+            updateShooters(teamSelector, [player], function(){
+                player.selectedIndex = 0;
+            });
+        }
+        
+        function updateShooters(teamSelector, selects, callback){
+            const teamName = teamSelector.options[teamSelector.selectedIndex].getAttribute("pagename");
             loadPlayersInTeam(teamName, function(result){
                 for (let i = 0; i<result.players.length; i++){
                     for (let j = 0; j<selects.length; j++){

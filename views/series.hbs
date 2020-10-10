@@ -45,9 +45,9 @@
                         <div class = "match-game">
                             <div class = "match-team match-result-team {{gameresult game.t1_score game.t2_score}}"><a href = "/series/{{../seriesName}}/{{game.t1_pagename}}">{{ game.t1_name }}</a></div>
                             <div class = "match-result">
-                                <div class = "match-score">{{game.t1_score}}</div>
+                                <div class = "match-score">{{score game.t1_score}}</div>
                                 -
-                                <div class = "match-score">{{game.t2_score}}</div>
+                                <div class = "match-score">{{score game.t2_score}}</div>
                             </div>
                             <div class = "match-team match-result-team {{gameresult game.t2_score game.t1_score}}"><a href = "/series/{{../seriesName}}/{{game.t2_pagename}}">{{ game.t2_name }}</a></div>
                         </div>
@@ -55,11 +55,12 @@
                     <div class = "match-lastgame">{{ vsstats game.t1_name game.t1_score game.t1_score_prev game.t2_name game.t2_score game.t2_score_prev }}</div>
                 </div>
                 {{#if game.video_platform}}
-                    <a href = "/series/{{../seriesName}}/{{game.t1_pagename}}/watch?game={{game.game_id}}">
-                        <img class = "match-thumbnail" src = "{{thumbnail game.video_platform game.video_link}}">
+                    <a class = "match-watch-link" href = "/series/{{../seriesName}}/{{game.t1_pagename}}/watch?game={{game.game_id}}">
+                        <img class = "match-thumbnail pc-view" src = "{{thumbnail game.video_platform game.video_link}}">
+                        <div class = "match-thumbnail-text mobile-view">&gt;&gt;Se match här&lt;&lt;</div>
                     </a>
                 {{else}}
-                    <div class = "match-no-thumbnail">
+                    <div class = "match-no-thumbnail pc-view">
                         Ingen video
                     </div>
                 {{/if}}
@@ -68,30 +69,32 @@
         
         <h3>Kommande matcher</h3>
         {{#each upcoming as |game index|}}
-            <div class = "match-wrapper">
-                <div class = "match-middle-wrapper">
-                    <div class = "match-inner-wrapper">
-                        <div class = "match-game">
-                            <div class = "match-team"><a href = "/series/{{../seriesName}}/{{game.t1_pagename}}">{{ game.t1_name }}</a></div>
+            <div class = "upcoming-wrapper {{ternary game.started "started" ""}}">
+                <div class = "upcoming-middle-wrapper">
+                    <div class = "upcoming-inner-wrapper">
+                        <div class = "upcoming-game">
+                            <span class = "upcoming-team"><a href = "/series/{{../seriesName}}/{{game.t1_pagename}}">{{ game.t1_name }}</a></span>
                             &nbsp;-&nbsp;
-                            <div class = "match-team"><a href = "/series/{{../seriesName}}/{{game.t2_pagename}}">{{ game.t2_name }}</a></div>
+                            <span class = "upcoming-team"><a href = "/series/{{../seriesName}}/{{game.t2_pagename}}">{{ game.t2_name }}</a></span>
                         </div>
-                        <div class = "match-playdate">{{ prettydatetime game.playdate }}</div>
-                        <div class = "match-location">{{ game.location }}</div>
+                        <div class = "upcoming-playdate pc-view">{{ prettydatetime game.playdate }}</div>
+                        <div class = "upcoming-location pc-view">{{ game.location }}</div>
                     </div>
                     {{#if (isnumber game.t1_score_prev)}}
-                        <div class = "match-lastgame">{{ lastgame game.t1_name game.t1_score_prev game.t2_name game.t2_score_prev }}</div>
+                        <div class = "upcoming-lastgame">{{ lastgame game.t1_name game.t1_score_prev game.t2_name game.t2_score_prev }}</div>
                     {{else}}
-                        De här lagen har inte mötts än i serien.
+                        <div class = "upcoming-lastgame">De här lagen har inte mötts än i serien.</div>
                     {{/if}}
+                </div>
+                <div class = "upcoming-playdate-and-location mobile-view">
+                    <div class = "upcoming-playdate mobile-view">{{ mobiledatetime game.playdate }}</div>
+                    <div class = "upcoming-location">{{ game.location }}</div>
                 </div>
             </div>
         {{/each}}
     </div>
     
-    <div class = "left-column">
-    </div>
-    
+    <h3 class = "mobile-view">Spelade matcher</h3>
     <div class = "table-wrapper invis-bordesr left-column">
         <table>
             <thead>
@@ -110,9 +113,9 @@
                         <td class = "centered">{{game.t1_score}} - {{game.t2_score}}</td>
                         <td class = "centered {{ternary game.video_link "" "grayed-out"}}">
                             {{#if game.video_link}}
-                                <a href = "/series/{{../seriesName}}/{{game.t1_pagename}}/watch?game={{game.game_id}}">Titta här</a>
+                                <a href = "/series/{{../seriesName}}/{{game.t1_pagename}}/watch?game={{game.game_id}}"><span id = "table-enums-video-link-yes"></span></a>
                             {{else}}
-                                Inte än
+                                <span id = "table-enums-video-link-no"></span>
                             {{/if}}
                         </td>
                     </tr>

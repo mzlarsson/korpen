@@ -1,0 +1,13 @@
+
+<div class = "troops-list-wrapper">
+    <b><a href = "/series/{{seriesName}}/{{teams.t1_pagename}}">{{teams.t1_name}}</a></b>:<br>
+    {{#each (dict troops teams.t1_id) as |player index|}}
+        <a href = "/series/{{../seriesName}}/{{../teams.t1_pagename}}/player/{{player.pagename}}">{{player.name}}</a>{{ternary (eq (inc @index) (len (dict ../troops ../teams.t1_id))) "" "," }} 
+    {{/each}}
+</div>
+<div class = "troops-list-wrapper">
+    <b><a href = "/series/{{seriesName}}/{{teams.t2_pagename}}">{{teams.t2_name}}</a></b>:<br>
+    {{#each (dict troops teams.t2_id) as |player index|}}
+        <a href = "/series/{{../seriesName}}/{{../teams.t2_pagename}}/player/{{player.pagename}}">{{player.name}}</a>{{ternary (eq (inc @index) (len (dict ../troops ../teams.t1_id))) "" "," }} 
+    {{/each}}
+</div>

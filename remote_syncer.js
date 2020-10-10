@@ -20,6 +20,7 @@ function updateSeries(series){
     request(url, {encoding: 'binary'}, (err, res, body) => {
         if (err) {
             console.log("Could not update series: " + err);
+            return;
         }
         
         const page_hash = crypto.createHash('md5').update(body).digest("hex");

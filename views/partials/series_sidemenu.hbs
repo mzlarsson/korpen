@@ -22,10 +22,13 @@
             <div class = "sidemenu-item {{ternary (eq serviceName "watch") "selected" ""}}">Se på video</div>
         </a>
         <a href = "/series/{{seriesName}}/{{teamName}}/upload/">
-            <div class = "sidemenu-item {{ternary (eq serviceName "upload") "selected" ""}}">Ladda upp video</div>
+            <div class = "sidemenu-item {{ternary (eq serviceName "upload") "selected" ""}}">Redigera matcher</div>
         </a>
         <a href = "/series/{{seriesName}}/{{teamName}}/settings/">
             <div class = "sidemenu-item {{ternary (eq serviceName "settings") "selected" ""}}">Inställningar</div>
+        </a>
+        <a href = "/login" class = "mobile-view">
+            <div class = "sidemenu-item">Logga in</div>
         </a>
     </div>
 
