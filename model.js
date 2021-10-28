@@ -794,6 +794,8 @@ function verifyPermissions(info){
         db.query(query, [data["auth"], data["team1"], data["team2"], data["property"]], function(result){
             const res = JSON.parse(JSON.stringify(result));
             if (res.length != 1 || (res[0].access & data["action"]) == 0){
+                console.log("Failed to verify");
+                console.log(res);
                 reject("Insufficient privileges for the requested action.");
             } else {
                 resolve(info);

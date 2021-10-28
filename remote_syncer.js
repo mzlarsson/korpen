@@ -40,7 +40,9 @@ function splitIntoLines(data){
 
 function findTeamId(teams, team_name){
     const team = teams.filter(t => t.name == team_name);
-    if (team.length != 1) console.log("Warning: Could not find team with name '" + team_name + "'");
+    if (team.length != 1) {
+        console.log("Warning: Could not find team with name '" + team_name + "'");
+    }
     return team.length == 1 ? team[0].id : -1;
 }
 
@@ -58,10 +60,18 @@ function updateSeriesWithData(series_id, teams, html_data){
     
     for(var i in homeTeams){
         if (homeTeams[i] != -1 && awayTeams[i] != -1){
-            var date = "20" + dates[i] + " " + times[i] + ":00";
-            var homeScore = homeScores[i].length == 0 ? null : parseInt(homeScores[i]);
-            var awayScore = awayScores[i].length == 0 ? null : parseInt(awayScores[i]);
-            db.query("INSERT INTO game (playdate, location, teamhome_id, teamaway_id, teamhome_score, teamaway_score) VALUES(?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE playdate=?, location=?, teamhome_score=?, teamaway_score=?", [date, locations[i], homeTeams[i], awayTeams[i], homeScore, awayScore, date, locations[i], homeScore, awayScore]);
+            if (dates[i].trim() != "" && times[i].trim() != "") {
+                var date = "20" + dates[i] + " " + times[i] + ":00";
+                var homeScore = homeScores[i].length == 0 ? null : parseInt(homeScores[i]);
+                var awayScore = awayScores[i].length == 0 ? null : parseInt(awayScores[i]);
+                db.query("INSERT INTO game (playdate, location, teamhome_id, teamaway_id, teamhome_score, teamaway_score) VALUES(?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE playdate=?, location=?, teamhome_score=?, teamaway_score=?", [date, locations[i], homeTeams[i], awayTeams[i], homeScore, awayScore, date, locations[i], homeScore, awayScore]);
+            }
+            else {
+                console.log("Warning: Could not find date for game. Skipping to insert");
+            }
+        }
+        else {
+            console.log("Warning: Could not find one (or both) teams in database. Skipping to insert");
         }
     }
 }

@@ -6,9 +6,10 @@ module.exports = function(model){
     const router = express.Router();
 
     router.get("/", (req, res) => {
-        model.getBaseData().then(function(data){
-            res.render("home", data);
-        });
+        res.redirect(302, "/series/2021-herr-klass-2a");
+        //model.getBaseData().then(function(data){
+        //    res.render("home", data);
+        //});
     });
     
     router.get("/series/:seriesName", (req, res) => {
