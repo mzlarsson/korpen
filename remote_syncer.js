@@ -125,6 +125,13 @@ function getGamesFromSoezi(teams, html_data) {
             awayTeamScore = parseInt(gameData.result.filter(r => r.team_id == gameData.teams[1].id)[0].result);
         }
 
+        if (Number.isNaN(homeTeamScore)) {
+            homeTeamScore = 0; // walk over?
+        }
+        if (Number.isNaN(awayTeamScore)) {
+            awayTeamScore = 0; // walk over?
+        }
+
         count++;
         if (gameData.activity == null) {
             console.log(`Skipping game with index ${count-1} due to no activity`);
